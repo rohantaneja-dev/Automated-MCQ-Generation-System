@@ -33,10 +33,15 @@ The application is designed for exam preparation and assessment practice, with c
 
 Automated-MCQ-Generation-System/
 ├── app.py # Flask entry point
+
 ├── apif.py # Gemini API integration & prompt logic
+
 ├── requirements.txt
+
 ├── README.md
+
 ├── templates/ # HTML templates
+
 └── static/ 
 
 ---
@@ -50,6 +55,15 @@ This project uses the Google Gemini API.
 
 **Note:**  
 You must add your own API key to run this project locally.
+
+---
+
+## 🧩 Error Handling & Reliability
+
+- Graceful handling of missing or invalid API keys
+- Fallback to raw LLM output display if parsing fails
+- Input validation for topic and number of questions
+- Parser designed to handle formatting inconsistencies in LLM responses
 
 ---
 
