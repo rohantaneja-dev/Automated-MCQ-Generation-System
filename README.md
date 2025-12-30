@@ -32,16 +32,17 @@ The application is designed for exam preparation and assessment practice, with c
 ## 📁 Project Structure
 
 Automated-MCQ-Generation-System/
+
 ├── app.py # Flask entry point
-
+|
 ├── apif.py # Gemini API integration & prompt logic
-
+|
 ├── requirements.txt
-
+|
 ├── README.md
-
+|
 ├── templates/ # HTML templates
-
+|
 └── static/ 
 
 ---
