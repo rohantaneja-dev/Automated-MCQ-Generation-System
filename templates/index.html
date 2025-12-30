@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Automated MCQ Generator — Rohan Taneja</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --accent:#0b7285;
+      --accent-2:#0f9d58;
+      --max-width:980px;
+    }
+
+    body{
+      margin:0;
+      font-family:"Poppins",sans-serif;
+      background:
+        linear-gradient(180deg, rgba(4,11,16,0.55), rgba(4,11,16,0.55)),
+        url('/static/bg.jpg') center/cover fixed no-repeat;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding:40px 20px;
+      min-height:100vh;
+    }
+
+    .container{
+      width:100%;
+      max-width:var(--max-width);
+      display:grid;
+      grid-template-columns: 1fr 380px;
+      background:#fff;
+      border-radius:14px;
+      overflow:hidden;
+      box-shadow:0 18px 40px rgba(0,0,0,0.45);
+    }
+
+    /* LEFT SIDE MAIN SECTION */
+    .main{
+      padding:34px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.86), rgba(255,255,255,0.86)),
+        url('/static/bg.jpg') center/cover no-repeat;
+      border-radius:14px 0 0 14px;
+    }
+
+    h1{
+      font-family:"Merriweather", serif;
+      font-size:28px;
+      margin:0 0 6px 0;
+      color:#072b2d;
+    }
+
+    .subtitle{
+      color:#405a5b;
+      font-size:14px;
+      margin-bottom:20px;
+    }
+
+    .marquee-wrap{
+      background:linear-gradient(90deg,var(--accent),var(--accent-2));
+      padding:10px;
+      border-radius:8px;
+      color:white;
+      margin-bottom:20px;
+      font-size:14px;
+      font-weight:600;
+      box-shadow:0 8px 18px rgba(0,0,0,0.15);
+    }
+
+    .project-note{
+      margin-bottom:28px;
+      padding:14px;
+      border-radius:10px;
+      background:white;
+      border:1px solid #dceeee;
+      font-size:13px;
+      color:#24383a;
+      line-height:1.5;
+    }
+
+    form{
+      display:block;
+      max-width:600px;
+    }
+
+    label{
+      display:block;
+      font-weight:600;
+      margin:12px 0 6px;
+      color:#072b2d;
+    }
+
+    input{
+      width:100%;
+      padding:10px 12px;
+      border-radius:8px;
+      border:1px solid #d8e9ea;
+      background:#f4fbfb;
+      font-size:14px;
+    }
+
+    button{
+      margin-top:18px;
+      background:linear-gradient(180deg,var(--accent),#095b64);
+      padding:10px 18px;
+      color:white;
+      border:none;
+      border-radius:8px;
+      font-size:15px;
+      cursor:pointer;
+      font-weight:600;
+      box-shadow:0 12px 24px rgba(11,114,133,0.25);
+    }
+
+    /* RIGHT SIDEBAR */
+    .card{
+      background:white;
+      padding:28px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      align-items:flex-start;
+    }
+
+    .logo img{
+      width:75px;
+      height:75px;
+      border-radius:12px;
+      display:block;
+    }
+
+    .name{
+      font-weight:700;
+      font-size:18px;
+      margin-top:6px;
+      color:#072b2d;
+    }
+
+    .role{
+      font-size:13px;
+      color:#405a5b;
+      margin-top:-6px;
+    }
+
+    .info{
+      font-size:13px;
+      color:#24383a;
+      line-height:1.5;
+      margin-top:10px;
+    }
+
+    .links{
+      margin-top:10px;
+      display:flex;
+      gap:10px;
+    }
+
+    .link-btn{
+      text-decoration:none;
+      color:var(--accent);
+      background:white;
+      border:1px solid #d9eef2;
+      padding:8px 10px;
+      font-size:13px;
+      border-radius:8px;
+      font-weight:600;
+    }
+
+    .contact{
+      margin-top:10px;
+      font-size:14px;
+      font-weight:600;
+      color:#b03a6b;
+    }
+
+    .contact a{
+      color:#b03a6b;
+      text-decoration:none;
+    }
+
+    @media(max-width:900px){
+      .container{
+        grid-template-columns:1fr;
+      }
+      .main{
+        border-radius:14px 14px 0 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- LEFT PANEL -->
+    <div class="main">
+      <h1>Automated MCQ Generator</h1>
+      <div class="subtitle">Generate exam-style multiple choice questions automatically using Gemini.</div>
+
+      <div class="marquee-wrap">
+        <marquee scrollamount="5">⚡ New: Now supports JEE-level & CBSE-level MCQs — Use short topics for best results</marquee>
+      </div>
+
+      <div class="project-note">
+        <strong>About this project:</strong><br>
+         This tool generates high-quality multiple-choice questions on demand. Great for teachers and students to create practice tests quickly. 
+         Built with Flask + Gemini API. Includes proper prompt-engineering, error handling, and production-ready deployment architecture.
+      </div>
+
+      <!-- 🔥 UPDATED FORM WITH TIMER SUPPORT -->
+      <form action="/generate" method="POST">
+
+        <label>Enter Topic</label>
+        <input name="topic" type="text" required placeholder="e.g. Artificial Intelligence, Kinematics">
+
+        <label>Number of Questions</label>
+        <input name="num_questions" type="number" min="1" value="1">
+
+        <!-- TIMER CONTROL -->
+        <div style="margin-top:12px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+          <label style="margin:0; font-weight:600;">Enable timer?</label>
+          <input id="enable_timer" name="enable_timer" type="checkbox" value="1" style="width:18px; height:18px;">
+
+          <label for="minutes_per_question" style="margin:0 0 0 8px; font-weight:600;">Minutes per question:</label>
+          <input id="minutes_per_question" name="minutes_per_question" type="number" min="0" value="1" style="width:90px;">
+
+          <small style="color:#405a5b; margin-left:8px;">(Set to 0 OR uncheck box for no timer)</small>
+        </div>
+
+        <button type="submit">Generate MCQs</button>
+      </form>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="card">
+      <div class="logo">
+        <img src="/static/logo.svg" alt="RT Logo">
+      </div>
+
+      <div class="name">Rohan Taneja</div>
+      <div class="role">B.E. — Software Engineer & Generative AI</div>
+
+      <div class="info">
+        <strong>Project:</strong> MCQ Generation System<br>
+        <strong>Stack:</strong> Flask • Gemini API • HTML/CSS<br>
+        <strong>Location:</strong> Patiala, India
+      </div>
+
+      <div class="links">
+        <a class="link-btn" href="https://www.linkedin.com/in/rohan-taneja-8a7359283" target="_blank">LinkedIn</a>
+        <a class="link-btn" href="mailto:tanejarohan121@gmail.com">Email</a>
+      </div>
+
+      <div class="contact">
+        <a href="tel:+91-7889246178">📞 +91-7889246178</a>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

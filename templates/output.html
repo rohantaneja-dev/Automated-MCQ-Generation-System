@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Generated MCQs — Automated MCQ Generator</title>
+
+  <!-- same fonts as index.html -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+
+  <!-- MathJax configuration (renders $...$ and $$...$$) -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$','$$'], ['\\[','\\]']],
+        processEscapes: true
+      },
+      svg: { fontCache: 'global' },
+      options: {
+        skipHtmlTags: ['script','noscript','style','textarea','pre']
+      }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+
+  <style>
+    :root{
+      --accent:#0b7285;
+      --accent-2:#0f9d58;
+      --max-width:980px;
+    }
+    html,body{
+      margin:0;
+      font-family:"Poppins",sans-serif;
+      background:
+        linear-gradient(180deg, rgba(4,11,16,0.55), rgba(4,11,16,0.55)),
+        url('/static/bg.jpg') center/cover fixed no-repeat;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding:40px 20px;
+      min-height:100vh;
+      color:#072b2d;
+    }
+
+    .container{
+      width:100%;
+      max-width:var(--max-width);
+      display:grid;
+      grid-template-columns: 1fr 380px;
+      background:#fff;
+      border-radius:14px;
+      overflow:hidden;
+      box-shadow:0 18px 40px rgba(0,0,0,0.45);
+    }
+
+    /* LEFT: output panel */
+    .main{
+      padding:34px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.86), rgba(255,255,255,0.86)),
+        url('/static/bg.jpg') center/cover no-repeat;
+      border-radius:14px 0 0 14px;
+    }
+
+    h1{
+      font-family:"Merriweather",serif;
+      font-size:26px;
+      margin:0 0 8px 0;
+      color:#072b2d;
+    }
+
+    .subtitle{
+      color:#405a5b;
+      font-size:14px;
+      margin-bottom:18px;
+    }
+
+    .result-wrap{
+      background: #fbffff;
+      border: 1px solid #d8eef0;
+      border-radius:12px;
+      padding:18px;
+      min-height:240px;
+      max-height:520px;
+      overflow:auto;
+      box-shadow: 0 10px 24px rgba(8,40,40,0.06);
+      font-size:15px;
+      line-height:1.55;
+      color:#0b1724;
+      white-space:pre-wrap; /* preserves newlines */
+    }
+
+    .controls{
+      margin-top:14px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      border:none;
+      padding:10px 14px;
+      border-radius:8px;
+      font-weight:600;
+      cursor:pointer;
+    }
+    .btn-copy{ background:#ffffff; color:var(--accent); border:1px solid #d8eef0; }
+    .btn-download{ background:linear-gradient(180deg,var(--accent),var(--accent-2)); color:#fff; }
+    .btn-back{ background:#f3f7f7; color:#23474a; border:1px solid #e6f2f2; }
+
+    /* Right sidebar (same style) */
+    .card{
+      background:white;
+      padding:28px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      align-items:flex-start;
+    }
+    .logo img{ width:75px; height:75px; border-radius:12px; display:block; }
+    .name{ font-weight:700; font-size:18px; margin-top:6px; color:#072b2d; }
+    .role{ font-size:13px; color:#405a5b; margin-top:-6px; }
+    .info{ font-size:13px; color:#24383a; line-height:1.5; margin-top:10px; }
+    .links{ margin-top:10px; display:flex; gap:10px; }
+    .link-btn{ text-decoration:none; color:var(--accent); background:white; border:1px solid #d9eef2; padding:8px 10px; font-size:13px; border-radius:8px; font-weight:600; }
+    .contact{ margin-top:10px; font-size:14px; font-weight:600; color:#b03a6b; }
+    .contact a{ color:#b03a6b; text-decoration:none; }
+
+    @media(max-width:900px){
+      .container{ grid-template-columns:1fr; }
+      .main{ border-radius:14px 14px 0 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Left: result -->
+    <div class="main">
+      <h1>Generated MCQs</h1>
+      <div class="subtitle">Below are the MCQs generated for your topic. Use the buttons to copy or download.</div>
+
+      <!-- result area: use safe so MathJax can see $...$ -->
+      <div id="result" class="result-wrap">
+        {%- if result %}
+          {{ result | safe }}
+        {%- else %}
+          No output received. Try generating again.
+        {%- endif %}
+      </div>
+
+      <div class="controls">
+        <button id="copyBtn" class="btn btn-copy">Copy</button>
+        <button id="downloadBtn" class="btn btn-download">Download .txt</button>
+        <a href="/" class="btn btn-back" style="text-decoration:none; display:inline-flex; align-items:center;">◀ Back</a>
+      </div>
+
+      <!-- friendly note -->
+      <div style="margin-top:14px; color:#324b4a; font-size:13px;">
+        Note: If the API returns an error or quota message, you will see it here. Try again later or adjust the prompt.
+      </div>
+    </div>
+
+    <!-- Right: profile card -->
+    <div class="card">
+      <div class="logo">
+        <img src="/static/logo.svg" alt="RT Logo">
+      </div>
+
+      <div class="name">Rohan Taneja</div>
+      <div class="role">B.Tech — Embedded Vision & Generative AI</div>
+
+      <div class="info">
+        <strong>Project:</strong> MCQ Generation System<br>
+        <strong>Stack:</strong> Flask • Gemini API • HTML/CSS<br>
+        <strong>Location:</strong> Patiala, India
+      </div>
+
+      <div class="links">
+        <a class="link-btn" href="https://www.linkedin.com/in/your-link" target="_blank">LinkedIn</a>
+        <a class="link-btn" href="mailto:youremail@example.com">Email</a>
+      </div>
+
+      <div class="contact">
+        <a href="tel:+91-7889246178">📞 +91-7889246178</a>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Copy to clipboard
+    document.getElementById('copyBtn').addEventListener('click', function(){
+      const text = document.getElementById('result').innerText;
+      if (!text) return alert('Nothing to copy');
+      navigator.clipboard.writeText(text).then(()=> {
+        alert('Copied to clipboard');
+      }, ()=> alert('Copy failed'));
+    });
+
+    // Download as .txt
+    document.getElementById('downloadBtn').addEventListener('click', function(){
+      const text = document.getElementById('result').innerText || "No output";
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      // filename — topic if available else mcq.txt
+      let filename = 'mcq.txt';
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    // ensure MathJax processes the rendered content after load
+    window.addEventListener('load', () => {
+      if (window.MathJax && MathJax.typesetPromise) {
+        MathJax.typesetPromise();
+      }
+    });
+  </script>
+</body>
+</html>

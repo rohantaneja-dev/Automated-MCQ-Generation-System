@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Quiz — Automated MCQ Generator</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+
+  <!-- MathJax config & loader -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+
+  <style>
+    body{font-family:'Poppins',sans-serif;margin:0;padding:24px;background:#f3f6f6;color:#072b2d;}
+    .frame{max-width:980px;margin:14px auto;background:white;border-radius:12px;box-shadow:0 12px 36px rgba(0,0,0,0.12);overflow:hidden;}
+    .header{padding:18px 24px;border-bottom:1px solid #eef6f6;display:flex;justify-content:space-between;align-items:center;}
+    .title{font-family:'Merriweather',serif;font-size:20px;}
+    .meta{font-size:13px;color:#3e5858;}
+    .content{display:flex;padding:20px;}
+    .left{flex:1;padding-right:20px;}
+    .right{width:300px;padding-left:20px;border-left:1px solid #f0f5f5;}
+    .question-card{border-radius:10px;border:1px solid #e6f6f6;padding:14px;margin-bottom:12px;background:#fbffff;}
+    .q-title{font-weight:700;margin-bottom:10px;}
+    .options{display:flex;flex-direction:column;gap:8px;}
+    .opt{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      padding:8px 10px;
+      border-radius:8px;
+      cursor:pointer;
+      border:1px solid transparent;
+      background:transparent;
+    }
+    .opt:hover{background:#eef9f9;}
+
+    .btn{
+      padding:10px 12px;
+      border-radius:8px;
+      border:0;
+      background:linear-gradient(180deg,#0b7285,#0f9d58);
+      color:white;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .btn-small{
+      background:#f3f7f7;
+      color:#23474a;
+      border:1px solid #e6f2f2;
+      padding:8px 12px;
+      cursor:pointer;
+      font-size:13px;
+      border-radius:8px;
+      margin-top:8px;
+    }
+
+    .timer{
+      font-weight:800;
+      color:#b03a6b;
+      font-size:18px;
+      padding:8px 12px;
+      background:white;
+      border-radius:8px;
+      border:1px solid #f0dbe2;
+      display:inline-block;
+    }
+
+    .explain{
+      margin-top:8px;
+      background:white;
+      border-radius:8px;
+      padding:10px;
+      border:1px solid #e6efef;
+      display:none;
+    }
+
+    /* background highlight for correct/wrong */
+    .correct{background:#e4ffed !important;border-color:#9de0b8 !important;}
+    .wrong{background:#ffe6e9 !important;border-color:#f1b6c0 !important;}
+
+    #summary{display:none;}
+    .result-summary{
+      margin-top:12px;
+      padding:12px;
+      background:#fbffff;
+      border-radius:8px;
+      border:1px solid #e6f6f6;
+      font-weight:700;
+    }
+
+    /* option text + icons */
+    .opt-text{flex:1;}
+    .icon{
+      display:none;
+      font-weight:900;
+      margin-left:6px;
+      font-size:18px;
+    }
+    .icon-correct{color:#0b8a3d;} /* dark green tick */
+    .icon-wrong{color:#d32f2f;}   /* red cross */
+
+    /* explanation lock icon + label */
+    .lock-icon{
+      margin-right:6px;
+      font-size:15px;
+    }
+    .explain-label{
+      font-size:13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <div class="header">
+      <div>
+        <div class="title">Automated MCQ Quiz</div>
+        <div class="meta">Topic: <strong>{{ topic }}</strong> — Questions: <strong>{{ questions|length }}</strong></div>
+      </div>
+      <div style="text-align:right;">
+        {% if enable_timer %}
+          <div>Time left: <span id="timer" class="timer">--:--</span></div>
+        {% else %}
+          <div class="meta">No timer — take your time</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="left">
+        <div id="questionsContainer"></div>
+        <div style="display:flex;gap:10px;margin-top:20px;">
+          <button id="submitBtn" class="btn">Submit</button>
+          <button id="finishBtn" class="btn">Finish</button>
+          <a href="/" style="margin-left:auto;"><button class="btn-small" type="button">Back</button></a>
+        </div>
+        <div id="summary"><div id="summaryText" class="result-summary"></div></div>
+      </div>
+
+      <div class="right">
+        <h3 style="margin-top:0;">Test Info</h3>
+        <div>Total Questions: {{ questions|length }}</div>
+        <div>Timer: {% if enable_timer %} {{ minutes_per_question }} min/question {% else %} Off {% endif %}</div>
+        <div style="margin-top:12px;">
+          Correct = <span style="color:green;font-weight:700;">green</span><br>
+          Wrong = <span style="color:red;font-weight:700;">red</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- safe JS variables -->
+  <script>
+    const QUESTIONS = {{ questions | tojson | safe }};
+    const ENABLE_TIMER = {{ enable_timer | tojson }};
+    const MIN_PER_Q = {{ minutes_per_question | tojson }};
+  </script>
+
+  <!-- MathJax safe helper -->
+  <script>
+    function mathjaxSafeTypeset(el, tryCount = 0) {
+      if (window.MathJax && typeof MathJax.typesetPromise === "function") {
+        try {
+          if (el) {
+            return MathJax.typesetPromise([el]).catch((e) => { console.warn("MathJax typesetPromise failed:", e); });
+          } else {
+            return MathJax.typesetPromise().catch((e) => { console.warn("MathJax typesetPromise failed:", e); });
+          }
+        } catch (err) {
+          console.warn("MathJax typeset attempt error:", err);
+        }
+        return Promise.resolve();
+      }
+
+      if (tryCount < 30) {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            mathjaxSafeTypeset(el, tryCount + 1).then(resolve).catch(resolve);
+          }, 100);
+        });
+      }
+
+      console.warn("MathJax not available after retries.");
+      return Promise.resolve();
+    }
+  </script>
+
+  <script>
+    let quizSubmitted = false;  // 🔒 explanations locked until submit/finish
+
+    function renderQuestions(){
+      const box = document.getElementById("questionsContainer");
+      box.innerHTML = "";
+      QUESTIONS.forEach((q, idx) => {
+        const card = document.createElement("div");
+        card.className = "question-card";
+        card.innerHTML = `
+          <div class="q-title"><strong>${idx+1}.</strong> ${q.question}</div>
+          <div class="options">
+            ${["A","B","C","D"].map(l=>`
+              <label class="opt">
+                <input type="radio" name="q${idx}" value="${l}">
+                <span class="opt-text">${l}) ${q.options[l]||""}</span>
+                <span class="icon icon-correct">✓</span>
+                <span class="icon icon-wrong">✗</span>
+              </label>
+            `).join("")}
+          </div>
+          <button class="btn-small" onclick="toggleExplain(${idx})" type="button">
+            <span id="lock-${idx}" class="lock-icon">🔒</span>
+            <span id="label-${idx}" class="explain-label">Need explanation?</span>
+          </button>
+          <div id="explain-${idx}" class="explain"><strong>Explanation:</strong><br>${q.explanation || "No explanation available."}</div>
+        `;
+        box.appendChild(card);
+      });
+
+      mathjaxSafeTypeset();
+    }
+
+    function toggleExplain(i){
+      // Before submit: keep locked, show message
+      if (!quizSubmitted) {
+        alert("Explanations are locked until you submit or finish the test.");
+        return;
+      }
+      const el = document.getElementById(`explain-${i}`);
+      el.style.display = el.style.display==="block" ? "none" : "block";
+      mathjaxSafeTypeset(el);
+    }
+
+    let timerInterval = null;
+    function startTimer(totalSec){
+      const t = document.getElementById("timer");
+      let left = totalSec;
+      function tick(){
+        let m = Math.floor(left/60), s = left%60;
+        t.textContent = `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+        if(left<=0){ clearInterval(timerInterval); autoSubmit(); }
+        left--;
+      }
+      tick();
+      timerInterval = setInterval(tick, 1000);
+    }
+    function autoSubmit(){ evaluate(); alert("⏳ Time is up! Submitting your answers."); window.scrollTo({top:0,behavior:"smooth"}); }
+
+    function evaluate(){
+      quizSubmitted = true;   // ✅ unlock explanations after this run
+
+      let score=0;
+      QUESTIONS.forEach((q, idx)=>{
+        const opts = document.getElementsByName("q"+idx);
+        if (!opts || opts.length === 0) return;
+
+        const card = opts[0].closest(".question-card");
+        let selected=null;
+        for(let o of opts){
+          if(o.checked) selected=o.value;
+        }
+        const correct = q.answer;
+
+        // reset states/icons first
+        card.querySelectorAll(".opt").forEach(o=>{
+          o.classList.remove("correct","wrong");
+          const icC = o.querySelector(".icon-correct");
+          const icW = o.querySelector(".icon-wrong");
+          if (icC) icC.style.display = "none";
+          if (icW) icW.style.display = "none";
+        });
+
+        // apply new states
+        card.querySelectorAll(".opt").forEach(o=>{
+          const v = o.querySelector("input").value;
+          const icC = o.querySelector(".icon-correct");
+          const icW = o.querySelector(".icon-wrong");
+
+          if (v === correct) {
+            o.classList.add("correct");
+            if (icC) icC.style.display = "inline-block";  // green tick on correct option
+          }
+
+          if (selected && v === selected && selected !== correct) {
+            o.classList.add("wrong");
+            if (icW) icW.style.display = "inline-block";  // red cross on chosen wrong option
+          }
+        });
+
+        if (selected === correct) {
+          score++;
+        }
+
+        // change lock icon and label to "unlocked"
+        const lock = document.getElementById(`lock-${idx}`);
+        const label = document.getElementById(`label-${idx}`);
+        if (lock) lock.textContent = "🔓";
+        if (label) label.textContent = "View explanation";
+      });
+
+      document.getElementById("summaryText").textContent = `Score: ${score} / ${QUESTIONS.length}`;
+      document.getElementById("summary").style.display = "block";
+    }
+
+    // Init
+    renderQuestions();
+
+    if(ENABLE_TIMER && MIN_PER_Q>0){
+      const totalSec = MIN_PER_Q * QUESTIONS.length * 60;
+      startTimer(totalSec);
+    }
+
+    document.getElementById("submitBtn").onclick = ()=>{
+      if(timerInterval) clearInterval(timerInterval);
+      evaluate();
+      window.scrollTo({top:0,behavior:"smooth"});
+    };
+    document.getElementById("finishBtn").onclick = ()=>{
+      if(timerInterval) clearInterval(timerInterval);
+      evaluate();
+      window.scrollTo({top:0,behavior:"smooth"});
+    };
+  </script>
+</body>
+</html>
